@@ -62,7 +62,7 @@ property netDelay : 30
 property processDelay : 2
 
 --Used to store supported iTunes versions
-property supportedItunesVersions : {"11.0.4"}
+property supportedItunesVersions : {"11.1.3"}
 
 (*
 	Email
@@ -718,24 +718,20 @@ on installIbooks()
 		-- AF 2012-05-14 Open location instead of .inetloc
 		tell application "iTunes" to open location ibooksLinkLocation
 		
-		set pageVerification to verifyPage("iBooks", 12, 0, netDelay) --Looking for "iBooks", in the twelfth element, on a page with an element count of 96, with a timeout of 5
-		
-		if pageVerification is "verified" then --Actually click the button to obtain iBooks
-			tell application "System Events"
-				try
-					if description of button 1 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes" contains "Free" then
-						click button 1 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
-					else
-						set errorList to errorList & "Unable to locate install app button by its description."
-					end if
-				on error
+		(*
+Need to build a new pageverification() and verifyPage() just for iBooks. Cross your fingers that your Internet connection is fast enough to keep up with the script for now...
+*)
+		tell application "System Events"
+			try
+				if description of button 1 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes" contains "Free" then
+					click button 1 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
+				else
 					set errorList to errorList & "Unable to locate install app button by its description."
-				end try
-			end tell
-			set pageVerification to ""
-		else --Throw error if page didn't verify
-			set errorList to errorList & "Unable to verify that iTunes is open at the iBooks App Store Page."
-		end if
+				end if
+			on error
+				set errorList to errorList & "Unable to locate install app button by its description."
+			end try
+		end tell
 		
 	end if
 end installIbooks
@@ -747,7 +743,7 @@ on ClickCreateAppleIDButton()
 		--Verification text for window:
 		--get value of static text 1 of window 1 of application process "iTunes" --should be equal to "Sign In to download from the iTunes Store"
 		tell application "System Events"
-			if value of static text 1 of window 1 of application process "iTunes" is "Sign In to download from the iTunes Store" then
+			if value of static text 1 of window 1 of application process "iTunes" is "Sign in to the iTunes Store" then
 				try
 					click button "Create Apple ID" of window 1 of application process "iTunes"
 				on error
@@ -764,7 +760,7 @@ end ClickCreateAppleIDButton
 
 on ClickContinueOnPageOne()
 	
-	set pageVerification to verifyPage("Welcome to the iTunes Store", 2, 12, netDelay) ----------Verify we are at page 1 of the Apple ID creation page
+	set pageVerification to verifyPage("Welcome to the iTunes Store", 2, 0, netDelay) ----------Verify we are at page 1 of the Apple ID creation page
 	
 	if pageVerification is "verified" then
 		
@@ -790,16 +786,16 @@ end ClickContinueOnPageOne
 
 on AgreeToTerms()
 	
-	set pageVerification to verifyPage("Terms and Conditions and Apple Privacy Policy", 2, 16, netDelay) ----------Verify we are at page 1 of the Apple ID creation page
+	set pageVerification to verifyPage("Terms and Conditions and Apple Privacy Policy", 2, 0, netDelay) ----------Verify we are at page 1 of the Apple ID creation page
 	
 	if pageVerification is "verified" then
 		tell application "System Events"
 			
 			--Check box
 			try
-				set buttonVerification to title of checkbox 1 of group 5 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
+				set buttonVerification to title of checkbox 1 of group 4 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
 				if buttonVerification is "I have read and agree to these terms and conditions." then
-					click checkbox 1 of group 5 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
+					click checkbox 1 of group 4 of UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
 				else
 					set errorList to errorList & "Unable to locate and check box ''I have read and agree to these terms and conditions.''"
 				end if
@@ -910,29 +906,29 @@ on ProvideAppleIdDetails(appleIdEmail, appleIdPassword, appleIdSecretQuestion1, 
 			tell application "System Events"
 				set theForm to UI element 1 of scroll area 1 of splitter group 1 of window 1 of application process "iTunes"
 				-----------
-				tell me to FillInField("Email", text field 1 of group 3 of theForm, appleIdEmail)
+				tell me to FillInField("Email", text field 1 of group 2 of theForm, appleIdEmail)
 				-----------
-				tell me to FillInKeystroke("Password", text field 1 of group 2 of group 4 of theForm, appleIdPassword)
+				tell me to FillInKeystroke("Password", text field 1 of group 2 of group 3 of theForm, appleIdPassword)
 				-----------
-				tell me to FillInKeystroke("Password Verification", text field 1 of group 4 of group 4 of theForm, appleIdPassword)
+				tell me to FillInKeystroke("Password Verification", text field 1 of group 4 of group 3 of theForm, appleIdPassword)
 				-----------
-				tell me to FillInPopup("Security Question 1", pop up button 1 of group 1 of group 7 of theForm, appleIdSecretQuestion1, 5)
-				tell me to FillInField("Security Answer 1", text field 1 of group 2 of group 7 of theForm, appleIdSecretAnswer1)
+				tell me to FillInPopup("Security Question 1", pop up button 1 of group 1 of group 6 of theForm, appleIdSecretQuestion1, 5)
+				tell me to FillInField("Security Answer 1", text field 1 of group 2 of group 6 of theForm, appleIdSecretAnswer1)
 				-----------
-				tell me to FillInPopup("Security Question 2", pop up button 1 of group 1 of group 8 of theForm, appleIdSecretQuestion2, 5)
-				tell me to FillInField("Security Answer 2", text field 1 of group 2 of group 8 of theForm, appleIdSecretAnswer2)
+				tell me to FillInPopup("Security Question 2", pop up button 1 of group 1 of group 7 of theForm, appleIdSecretQuestion2, 5)
+				tell me to FillInField("Security Answer 2", text field 1 of group 2 of group 7 of theForm, appleIdSecretAnswer2)
 				-----------
-				tell me to FillInPopup("Security Question 3", pop up button 1 of group 1 of group 9 of theForm, appleIdSecretQuestion3, 5)
-				tell me to FillInField("Security Answer 3", text field 1 of group 2 of group 9 of theForm, appleIdSecretAnswer3)
+				tell me to FillInPopup("Security Question 3", pop up button 1 of group 1 of group 8 of theForm, appleIdSecretQuestion3, 5)
+				tell me to FillInField("Security Answer 3", text field 1 of group 2 of group 8 of theForm, appleIdSecretAnswer3)
 				-----------
-				tell me to FillInField("Rescue Email", text field 1 of group 12 of theForm, appleIdRescueEmail)
+				tell me to FillInField("Rescue Email", text field 1 of group 11 of theForm, appleIdRescueEmail)
 				-----------
-				tell me to FillInPopup("Month", pop up button 1 of group 1 of group 14 of theForm, userBirthMonth, 12)
-				tell me to FillInPopup("Day", pop up button 1 of group 2 of group 14 of theForm, userBirthDay, 31)
-				tell me to FillInField("Year", text field 1 of group 3 of group 14 of theForm, userBirthYear)
+				tell me to FillInPopup("Month", pop up button 1 of group 1 of group 13 of theForm, userBirthMonth, 12)
+				tell me to FillInPopup("Day", pop up button 1 of group 2 of group 13 of theForm, userBirthDay, 31)
+				tell me to FillInField("Year", text field 1 of group 3 of group 13 of theForm, userBirthYear)
 				-----------
-				tell me to ClickThis("New Releases", checkbox 1 of group 16 of theForm)
-				tell me to ClickThis("News and Special Offers", checkbox 1 of group 17 of theForm)
+				tell me to ClickThis("New Releases", checkbox 1 of group 15 of theForm)
+				tell me to ClickThis("News and Special Offers", checkbox 1 of group 16 of theForm)
 				-----------
 				
 				my CheckForErrors() --Check for errors before continuing to the next page
@@ -971,58 +967,58 @@ on ProvidePaymentDetails(userFirstName, userLastName, addressStreet, addressCity
 		tell application "System Events"
 			try
 				set frontmost of application process "iTunes" to true --Verify that iTunes is the front window before performking keystroke event
-				set focused of pop up button 1 of group 1 of group 8 of theForm to true
+				set focused of pop up button 1 of group 1 of group 7 of theForm to true
 				keystroke "Dr"
 			on error
 				set errorList to errorList & "Unable to set ''Title'' to ''Dr.''"
 			end try
 			-----------
 			try
-				set value of text field 1 of group 1 of group 9 of theForm to userFirstName
+				set value of text field 1 of group 1 of group 8 of theForm to userFirstName
 			on error
 				set errorList to errorList & "Unable to set ''First Name'' field to " & userFirstName
 			end try
 			-----------
 			try
-				set value of text field 1 of group 2 of group 9 of theForm to userLastName
+				set value of text field 1 of group 2 of group 8 of theForm to userLastName
 			on error
 				set errorList to errorList & "Unable to set ''Last Name'' field to " & userLastName
 			end try
 			-----------
 			try
-				set value of text field 1 of group 1 of group 10 of theForm to addressStreet
+				set value of text field 1 of group 1 of group 9 of theForm to addressStreet
 			on error
 				set errorList to errorList & "Unable to set ''Street Address'' field to " & addressStreet
 			end try
 			-----------
 			try
-				set value of text field 1 of group 1 of group 11 of theForm to addressCity
+				set value of text field 1 of group 1 of group 10 of theForm to addressCity
 			on error
 				set errorList to errorList & "Unable to set ''City'' field to " & addressCity
 			end try
 			-----------
 			try
-				set frontmost of application process "iTunes" to true --Verify that iTunes is the front window before performking keystroke event
-				set focused of pop up button 1 of group 2 of group 11 of theForm to true
+				set frontmost of application process "iTunes" to true --Verify that iTunes is the front window before performing keystroke event
+				set focused of pop up button 1 of group 2 of group 10 of theForm to true
 				keystroke addressState
 			on error
 				set errorList to errorList & "Unable to set ''State'' drop-down to " & addressState
 			end try
 			-----------
 			try
-				set value of text field 1 of group 3 of group 11 of theForm to addressZip
+				set value of text field 1 of group 3 of group 10 of theForm to addressZip
 			on error
 				set errorList to errorList & "Unable to set ''Zip Code'' field to " & addressZip
 			end try
 			-----------
 			try
-				set value of text field 1 of group 1 of group 12 of theForm to phoneAreaCode
+				set value of text field 1 of group 1 of group 11 of theForm to phoneAreaCode
 			on error
 				set errorList to errorList & "Unable to set ''Area Code'' field to " & phoneAreaCode
 			end try
 			-----------
 			try
-				set value of text field 1 of group 2 of group 12 of theForm to phoneNumber
+				set value of text field 1 of group 2 of group 11 of theForm to phoneNumber
 			on error
 				set errorList to errorList & "Unable to set ''Phone Number'' field to " & phoneNumber
 			end try
